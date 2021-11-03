@@ -43,8 +43,9 @@ func (w *webhookForwarder) forward(ctx context.Context, msgStream <-chan *logHTT
 	eventsPayload := []*logHTTPHandlerRequestBody{}
 	deadline := time.After(w.batchInterval)
 	for msg := range msgStream {
+		eventsPayload = append(eventsPayload, msg)
 		// if batch size was set
-		if w.batchSize > 0 && len(eventsPayload) == w.batchSize {
+		if w.batchSize > 0 && len(eventsPayload) >= w.batchSize {
 			w.forwardEvents(
 				ctx,
 				eventsPayload,
@@ -52,6 +53,8 @@ func (w *webhookForwarder) forward(ctx context.Context, msgStream <-chan *logHTT
 			)
 			// clear cache
 			eventsPayload = nil
+			// reset deadline
+			deadline = time.After(w.batchInterval)
 		} else if w.batchInterval > 0 { // if batchInterval was set, try to check if its reached
 			select {
 			case <-deadline:
@@ -69,12 +72,11 @@ func (w *webhookForwarder) forward(ctx context.Context, msgStream <-chan *logHTT
 				continue
 			}
 		}
-		eventsPayload = append(eventsPayload, msg)
 	}
 }
 
 func (w *webhookForwarder) forwardEvents(ctx context.Context, eventsPayload []*logHTTPHandlerRequestBody, errCh chan<- error) {
-	// set time was probably reached, however no new payload was recieved from /log
+	// set time was probably reached, however no new payload was received from /log
 	if len(eventsPayload) == 0 {
 		return
 	}
