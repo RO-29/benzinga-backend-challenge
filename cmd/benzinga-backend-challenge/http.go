@@ -35,7 +35,7 @@ func runHTTPServer(ctx context.Context, dic *diContainer, addr string) error {
 }
 
 func runForwarderConsumer(ctx context.Context, dic *diContainer) {
-	inputBufferMsgs := make(chan logHTTPHandlerRequestBody, dic.flags.batchSize*2)
+	inputBufferMsgs := make(chan *logHTTPHandlerRequestBody, dic.flags.batchSize*2)
 	fw := dic.webhookForwarder()
 	errCh := make(chan error)
 	go fw.forward(ctx, inputBufferMsgs, errCh)

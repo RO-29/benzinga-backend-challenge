@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 type healthzHandler struct { // TODO Have fun here
@@ -37,6 +38,7 @@ func (h *healthzHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *healthzHandler) handle(_ context.Context, w http.ResponseWriter, _ *http.Request) {
+	log.Info("request received for /healthz")
 	// TODO ideas for health check?
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte("OK"))

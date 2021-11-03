@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 type logHandler struct{}
@@ -62,6 +63,7 @@ type phoneNumbers struct {
 }
 
 func (h *logHandler) handle(_ context.Context, w http.ResponseWriter, req *http.Request) {
+	log.Info("request received for /log")
 	_, err := h.decodeRequestBody(req)
 	if err != nil {
 		onHTTPError(
