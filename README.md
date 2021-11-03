@@ -86,7 +86,6 @@ WEBHOOK_BATCH_INTERVAL=<valid golang time.Duration>
 ### Scope of Improvements
 - Start `forwarder` consumer in waitgroup so it multiple consumers could be started in background in case of high throughput.
 - Add more unit tests 🙈
-- 
 ## github-action
 
 - On every push to github, it runs linter / test and docker build
