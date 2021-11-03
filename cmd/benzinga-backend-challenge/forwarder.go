@@ -13,12 +13,16 @@ import (
 )
 
 type webhookForwarder struct {
-	endpoint string
+	endpoint      string
+	batchSize     int
+	batchInterval time.Duration
 }
 
 func newWebhookForwarderHandler(dic *diContainer) *webhookForwarder {
 	return &webhookForwarder{
-		endpoint: dic.flags.postEndpoint,
+		endpoint:      dic.flags.postEndpoint,
+		batchSize:     dic.flags.batchSize,
+		batchInterval: dic.flags.batchInterval,
 	}
 }
 
@@ -37,9 +41,39 @@ func newWebhookForwarderDIProvider(dic *diContainer) func() *webhookForwarder {
 
 func (w *webhookForwarder) forward(ctx context.Context, msgStream <-chan *logHTTPHandlerRequestBody, errCh chan<- error) {
 	eventsPayload := []*logHTTPHandlerRequestBody{}
+	deadline := time.After(w.batchInterval)
 	for msg := range msgStream {
+		// if batch size was set
+		if w.batchSize > 0 && len(eventsPayload) == w.batchSize {
+			w.forwardEvents(
+				ctx,
+				eventsPayload,
+				errCh,
+			)
+			// clear cache
+			eventsPayload = nil
+		} else if w.batchInterval > 0 { // if batchInterval was set, try to check if its reached
+			select {
+			case <-deadline:
+				w.forwardEvents(
+					ctx,
+					eventsPayload,
+					errCh,
+				)
+				// reset deadline
+				deadline = time.After(w.batchInterval)
+				// clear cache
+				eventsPayload = nil
+			default:
+				// in case deadline is not reached, continue
+				continue
+			}
+		}
 		eventsPayload = append(eventsPayload, msg)
 	}
+}
+
+func (w *webhookForwarder) forwardEvents(ctx context.Context, eventsPayload []*logHTTPHandlerRequestBody, errCh chan<- error) {
 	timeStart := time.Now()
 	statusCode, err := w.forwardWithRetries(
 		ctx,
@@ -57,9 +91,6 @@ func (w *webhookForwarder) forward(ctx context.Context, msgStream <-chan *logHTT
 			"batch_size":       len(eventsPayload),
 		},
 	).Info("request success")
-	// clear cache
-	// eventsPayload = nil
-
 }
 
 func (w *webhookForwarder) forwardWithRetries(ctx context.Context, eventsPayload []*logHTTPHandlerRequestBody) (int, error) {
@@ -68,7 +99,7 @@ func (w *webhookForwarder) forwardWithRetries(ctx context.Context, eventsPayload
 	if err != nil {
 		return 0, errors.Wrap(err, "marshal")
 	}
-	// Retrying won't help as its an issu with url parse
+	// Retrying won't help as its an issue with url parse
 	req, err := http.NewRequest(
 		http.MethodPost,
 		w.endpoint,

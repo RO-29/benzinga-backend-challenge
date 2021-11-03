@@ -10,6 +10,7 @@ import (
 )
 
 func TestLogHandler(t *testing.T) {
+	logBufferMsgs = make(chan *logHTTPHandlerRequestBody, 2)
 	r := mux.NewRouter()
 	h := &logHandler{}
 	body := `{

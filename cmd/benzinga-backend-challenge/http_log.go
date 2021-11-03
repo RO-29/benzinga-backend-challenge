@@ -64,7 +64,7 @@ type phoneNumbers struct {
 
 func (h *logHandler) handle(_ context.Context, w http.ResponseWriter, req *http.Request) {
 	log.Info("request received for /log")
-	_, err := h.decodeRequestBody(req)
+	body, err := h.decodeRequestBody(req)
 	if err != nil {
 		onHTTPError(
 			req.Context(),
@@ -77,6 +77,9 @@ func (h *logHandler) handle(_ context.Context, w http.ResponseWriter, req *http.
 			})
 		return
 	}
+	// Note it could be in blocking state if the buffer is full and forward consumer is processing
+	logBufferMsgs <- body
+
 	w.WriteHeader(http.StatusCreated)
 	_, _ = w.Write([]byte("accepted"))
 }
