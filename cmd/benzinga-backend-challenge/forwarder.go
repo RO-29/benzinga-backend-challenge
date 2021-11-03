@@ -118,7 +118,7 @@ func (w *webhookForwarder) forwardEvents(ctx context.Context, eventsPayload []*l
 			"http_status_code": statusCode,
 			"batch_size":       len(eventsPayload),
 		},
-	).Info("request success")
+	).Info("webhook request success")
 }
 
 func (w *webhookForwarder) forwardWithRetries(ctx context.Context, eventsPayload []*logHTTPHandlerRequestBody) (int, error) {
@@ -166,7 +166,7 @@ func (w *webhookForwarder) forwardWithRetries(ctx context.Context, eventsPayload
 		if res.StatusCode >= 200 && res.StatusCode < 300 {
 			return res.StatusCode, nil
 		}
-		err = errors.Errorf("unexpected status code from post request got:%#v want:%#v", res.StatusCode, "200 <= status_code < 300")
+		err = errors.Errorf("unexpected status code from post request got:%#v want:%#v", res.StatusCode, "status code in[200,300)")
 		lastErr = err
 		retries++
 	}
