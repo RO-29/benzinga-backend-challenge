@@ -44,19 +44,7 @@ func TestLogHandlerSetErr(t *testing.T) {
 	r := mux.NewRouter()
 	h := &logHandler{}
 	body := `{
-		"total": 1.65,
-		"title": "delectus aut autem",
-		"meta": {
-			"logins": [{
-				"time": "2020-08-08T01:52:50Z",
-				"ip": "0.0.0.0"
-			}],
-			"phone_numbers": {
-				"home": "555-1212",
-				"mobile": "123-5555"
-			}
-		},
-		"completed": false
+		"total": 10.00
 	}
 	`
 	configureLogHTTPRoute(r.NewRoute()).Handler(h)
