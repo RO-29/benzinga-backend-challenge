@@ -58,7 +58,6 @@ Benzinga Backend Challenge, a simple webhook receiver and forwarder.
 
 ## Build
 
-- `docker-compose up -d` will run the http path(s) on localhost:8080
 - `make build` puts the binary executable in `$root/build` folder.
 - it's good to run `make lint test` before the make build command to ensure lint and test passes.
 - make `docker-build` generates the docker image in `$root/build` folder.
