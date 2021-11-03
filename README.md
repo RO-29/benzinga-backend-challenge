@@ -72,16 +72,14 @@ WEBHOOK_BATCH_INTERVAL=<valid golang time.Duration>
 
 ### Algorithm / Implementation
 - A buffered channel is init at program startup, if `batch size > 0`, `buffered channel = 2*batch_size` or `100` by default.
-- Buffered channel will make sure, /log is not blocking deserializing while our forwarder consumer is processing.
-- At same, time HTTP handlers / receivers are regsitered. (Routing is handled via gorrila/mux).
-- `/log` recieves the json, deserile in thedefined strcut and pushes to a buffered channel.
-- We start a `forwarder consumer` in background and it iterates over buffer channel and accumulates msgs in a simple in-memory array.
-- `forwarder consumer` itself regsiter a background process which starts a forever blocking select channel.
-- select channel has three cases, either a batch_size is full or batch_interval is reached or accumualte the msg in in-memory array.
-- When batch(size/interval) is reached, it forwards the accumualted msgs to webhook endpoint as per the requirement
-- if there is error in "post call" after three retries, it sends the error to err channel and then the programs exits as per the requirement
-
-
+- Buffered channel will make sure, /log is not `blocked` deserializing while the forwarder consumer is processing.
+- At same, time `HTTP handlers / receivers` are regsitered. (Routing is handled via `gorrila/mux`).
+- `/log` recieves the json, deserialize it in the defined struct and pushes to the buffered channel.
+- A `forwarder consumer` is started in the background and it iterates over buffer channel and starts pushing to unbuffered channel to be processed by another background consumer.
+- `forwarder consumer` itself regsiter a `background process` which starts a forever blocking `select channel`.
+- `select channel` has three cases, either a `batch_size` is full or `batch_interval` is reached or accumualte the msg in in-memory array.
+- When the batch(size/interval) limit is reached, it forwards the accumualted msgs to webhook endpoint as per the requirement.
+- if there is a error in the "post call" after three retries, it sends the error to `err` channel and the programs exits as per the requirement.
 
 ### Scope of Improvements
 - Start `forwarder` consumer in waitgroup so it multiple consumers could be started in background in case of high throughput.
