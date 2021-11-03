@@ -72,7 +72,7 @@ linters-settings:
     require-explanation: true
     require-specific: true
   stylecheck:
-    go: "1.16"
+    go: "1.17"
     checks: [ "all" ]
 issues:
   exclude-use-default: false
