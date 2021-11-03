@@ -40,45 +40,67 @@ func newWebhookForwarderDIProvider(dic *diContainer) func() *webhookForwarder {
 }
 
 func (w *webhookForwarder) forward(ctx context.Context, msgStream <-chan *logHTTPHandlerRequestBody, errCh chan<- error) {
+	msg := make(chan *logHTTPHandlerRequestBody)
+	go w.bgProcessor(
+		ctx,
+		msg,
+		errCh,
+	)
+	for ms := range msgStream {
+		msg <- ms
+	}
+}
+
+func (w *webhookForwarder) bgProcessor(ctx context.Context, msg <-chan *logHTTPHandlerRequestBody, errCh chan<- error) {
 	eventsPayload := []*logHTTPHandlerRequestBody{}
-	deadline := time.After(w.batchInterval)
-	for msg := range msgStream {
-		eventsPayload = append(eventsPayload, msg)
-		// if batch size was set
+	var deadline <-chan time.Time
+	if w.batchInterval > 0 {
+		deadline = time.After(w.batchInterval)
+	}
+	for {
 		if w.batchSize > 0 && len(eventsPayload) >= w.batchSize {
 			w.forwardEvents(
 				ctx,
 				eventsPayload,
 				errCh,
+				false,
 			)
 			// clear cache
 			eventsPayload = nil
 			// reset deadline
-			deadline = time.After(w.batchInterval)
-		} else if w.batchInterval > 0 { // if batchInterval was set, try to check if its reached
-			select {
-			case <-deadline:
-				w.forwardEvents(
-					ctx,
-					eventsPayload,
-					errCh,
-				)
-				// reset deadline
+			if w.batchInterval > 0 {
 				deadline = time.After(w.batchInterval)
-				// clear cache
-				eventsPayload = nil
-			default:
-				// in case deadline is not reached, continue
-				continue
 			}
+		}
+		select {
+		case ep := <-msg:
+			eventsPayload = append(eventsPayload, ep)
+		case <-deadline:
+			w.forwardEvents(
+				ctx,
+				eventsPayload,
+				errCh,
+				true,
+			)
+			// clear cache
+			eventsPayload = nil
+			// reset deadline
+			if w.batchInterval > 0 {
+				deadline = time.After(w.batchInterval)
+			}
+		default:
+			continue
 		}
 	}
 }
 
-func (w *webhookForwarder) forwardEvents(ctx context.Context, eventsPayload []*logHTTPHandlerRequestBody, errCh chan<- error) {
+func (w *webhookForwarder) forwardEvents(ctx context.Context, eventsPayload []*logHTTPHandlerRequestBody, errCh chan<- error, batchInterval bool) {
 	// set time was probably reached, however no new payload was received from /log
 	if len(eventsPayload) == 0 {
 		return
+	}
+	if batchInterval {
+		log.WithField("flush", w.batchInterval).Info("batch interval")
 	}
 	timeStart := time.Now()
 	statusCode, err := w.forwardWithRetries(
@@ -125,6 +147,12 @@ func (w *webhookForwarder) forwardWithRetries(ctx context.Context, eventsPayload
 		}
 		// sleep before each retry but not first try
 		if retries >= 1 {
+			log.WithFields(
+				log.Fields{
+					"retry":          retries,
+					"sleep_interval": "2s",
+				},
+			).Info("post err")
 			time.Sleep(2 * time.Second)
 		}
 		res, err := http.DefaultClient.Do(req)
@@ -132,10 +160,14 @@ func (w *webhookForwarder) forwardWithRetries(ctx context.Context, eventsPayload
 			err = errors.Wrap(err, "DO http client request")
 			lastErr = err
 			retries++
+			continue
 		}
 		defer res.Body.Close() //nolint:errcheck
 		if res.StatusCode >= 200 && res.StatusCode < 300 {
 			return res.StatusCode, nil
 		}
+		err = errors.Errorf("unexpected status code from post request got:%#v want:%#v", res.StatusCode, "200 <= status_code < 300")
+		lastErr = err
+		retries++
 	}
 }
