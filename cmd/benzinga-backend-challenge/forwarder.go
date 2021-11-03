@@ -74,6 +74,10 @@ func (w *webhookForwarder) forward(ctx context.Context, msgStream <-chan *logHTT
 }
 
 func (w *webhookForwarder) forwardEvents(ctx context.Context, eventsPayload []*logHTTPHandlerRequestBody, errCh chan<- error) {
+	// set time was probably reached, however no new payload was recieved from /log
+	if len(eventsPayload) == 0 {
+		return
+	}
 	timeStart := time.Now()
 	statusCode, err := w.forwardWithRetries(
 		ctx,
