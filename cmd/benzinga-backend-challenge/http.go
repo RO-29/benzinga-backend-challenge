@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func runHTTPServer(_ context.Context, dic *diContainer, addr string) error {
+func runHTTPServer(ctx context.Context, dic *diContainer, addr string) error {
 	h, err := dic.httpHandler()
 	if err != nil {
 		return errors.Wrap(err, "get http handler")
@@ -24,12 +24,36 @@ func runHTTPServer(_ context.Context, dic *diContainer, addr string) error {
 		Addr:    addr,
 		Handler: h,
 	}
+	go runForwarderConsumer(ctx, dic)
 	err = srv.ListenAndServe()
 	if err != nil {
 		return errors.Wrap(err, "listen and serve")
 	}
+
 	log.Info("Stopped HTTP server")
 	return nil
+}
+
+var logBufferMsgs chan *logHTTPHandlerRequestBody
+
+func runForwarderConsumer(ctx context.Context, dic *diContainer) {
+	bufferSize := 100
+	if dic.flags.batchSize > 0 {
+		bufferSize = dic.flags.batchSize * 2
+	}
+	//bufferSize twice the batch size in case processing slow and we don't want /log to wait to send msg to buffered channel, *100* if batchSize was  not set.
+	/*
+		to process faster, we an start runForwarderConsumer in waitgroup mode with adding more consumer as we want but throughput must be higher to add more consumers, starting with one consumer for now
+	*/
+	logBufferMsgs = make(chan *logHTTPHandlerRequestBody, bufferSize)
+	fw := dic.webhookForwarder()
+	errCh := make(chan error)
+	go fw.forward(ctx, logBufferMsgs, errCh)
+	// wait for err signal from forwarder, exit in case of error
+	err := <-errCh
+	if err != nil {
+		log.WithField("err: ", err).Fatal("exit")
+	}
 }
 
 func newHTTPHandler(dic *diContainer) (http.Handler, error) {
