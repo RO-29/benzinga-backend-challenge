@@ -1,0 +1,11 @@
+.git
+.gitignore
+CODEOWNERS
+README.md
+.github
+.dockerignore
+Dockerfile
+.golangci.yml
+build
+coverage.*
+.idea

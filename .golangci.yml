@@ -1,0 +1,80 @@
+run:
+  timeout: "10m"
+output:
+  sort-results: true
+linters:
+  disable-all: true
+  enable:
+    - "asciicheck"
+    - "bodyclose"
+    - "deadcode"
+    - "depguard"
+    - "errcheck"
+    - "errorlint"
+    - "exportloopref"
+    - "gocritic"
+    - "gocyclo"
+    - "godot"
+    - "goerr113"
+    - "gofmt"
+    - "gofumpt"
+    - "goimports"
+    - "gosimple"
+    - "govet"
+    - "ineffassign"
+    - "makezero"
+    - "misspell"
+    - "nakedret"
+    - "nilerr"
+    - "nolintlint"
+    - "predeclared"
+    - "staticcheck"
+    - "structcheck"
+    - "stylecheck"
+    - "unconvert"
+    - "unparam"
+    - "unused"
+    - "varcheck"
+linters-settings:
+  depguard:
+    list-type: blacklist
+    include-go-root: true
+  errcheck:
+    check-type-assertions: true
+  gocritic:
+    enabled-tags:
+      - experimental
+      - diagnostic
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - commentFormatting # TODO enable in order to follow the Go convention.
+      - hugeParam # Too many problem for now. And maybe it's not a real issue.
+      - paramTypeCombine # Too many false positive.
+      - ptrToRefParam # TODO evaluate if this check can be enabled, and disable with nolint for specific cases.
+      - rangeValCopy # TODO evaluate if this should be fixed or not.
+      - tooManyResultsChecker # It's usually justified.
+      - unnamedResult # TODO fix projects.
+      - whyNoLint # It's the developer/reviewer responsibility.
+  gocyclo:
+    min-complexity: 10
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+  nolintlint:
+    allow-unused: false
+    allow-leading-space: false
+    allow-no-explanation:
+      - errcheck
+      - misspell
+    require-explanation: true
+    require-specific: true
+  stylecheck:
+    go: "1.16"
+    checks: [ "all" ]
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
