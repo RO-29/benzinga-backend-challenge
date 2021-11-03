@@ -12,7 +12,6 @@ import (
 
 type flags struct {
 	http          string
-	logFile       string
 	batchSize     int
 	batchInterval time.Duration
 	postEndpoint  string
@@ -27,7 +26,6 @@ func getFlags() *flags {
 	initFlagsFromEnv(flg)
 	fs := flag.NewFlagSet("", flag.ExitOnError)
 	fs.StringVar(&flg.http, "http", flg.http, "HTTP ")
-	fs.StringVar(&flg.logFile, "log-file", flg.logFile, "log file")
 	fs.IntVar(&flg.batchSize, "batch-size", flg.batchSize, "Batch Size")
 	fs.DurationVar(&flg.batchInterval, "batch-interval", flg.batchInterval, "Batch Interval")
 	fs.StringVar(&flg.postEndpoint, "post-endpoint", flg.postEndpoint, "Post Endpoint")

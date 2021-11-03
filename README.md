@@ -24,27 +24,27 @@ Benzinga Backend Challenge, a simple webhook receiver and forwarder.
 }
 ```
 
-### Requirements 
+### Requirements
 
-- The application should have three configurable values that should be read from environment variables: 
+- The application should have three configurable values that should be read from environment variables:
    - batch size
-   - batch interval  
+   - batch interval
    - post endpoint
 - The application should deserialize the JSON payload received at /log endpoint into a struct.
 - Retain them all in-memory.
 - When batch size is reached OR the batch interval has passed forward the collected records as an array to the post endpoint.
 - Clear the in-memory cache of objects.
 - Logger (`"github.com/sirupsen/logrus"`)
-   - log an initialization message on startup 
-   - On each HTTP request 
-   - Each time it sends a batch  
+   - log an initialization message on startup
+   - On each HTTP request
+   - Each time it sends a batch
      - log the batch size.
      - result status code.
-     - duration of the POST request to the external endpoint. 
-#### Addtional Requirements 
-- If the POST fails 
-   - Retry 3 times, waiting 2 seconds before each retry. 
-   - After 3 failures log this failure and exit. 
+     - duration of the POST request to the external endpoint.
+#### Addtional Requirements
+- If the POST fails
+   - Retry 3 times, waiting 2 seconds before each retry.
+   - After 3 failures log this failure and exit.
 - Testing for the Post endpoint output will be done against a service such as http://requestbin.net.
 
 ### Arguments
@@ -57,8 +57,6 @@ batch-interval duration
         Batch Size (default 10)
   -http string
         HTTP  (default ":8080")
-  -log-file string
-        log file
   -post-endpoint string
         Post Endpoint
 ```
@@ -134,4 +132,3 @@ curl -X GET \
   http://localhost:8080/healthz \
   -H 'cache-control: no-cache'
 ```
-
