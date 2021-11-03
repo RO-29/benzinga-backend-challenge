@@ -39,6 +39,10 @@ func checkFlags(flg *flags) {
 	if flg.postEndpoint == "" {
 		log.Fatal("mandatory post endpoint not set")
 	}
+	_, err := url.Parse(flg.postEndpoint)
+	if err != nil {
+		log.Fatalf("\ninvalid post endpoint: '%s'", flg.postEndpoint)
+	}
 	if flg.batchInterval == 0 && flg.batchSize == 0 {
 		log.Fatal("either of batch size or batch interval must be set")
 	}
