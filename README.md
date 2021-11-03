@@ -1,5 +1,5 @@
 # benzinga-backend-challenge
-Benzinga Backend Challenge, A webhhok receiver and forwarder.
+Benzinga Backend Challenge, a simple webhook receiver and forwarder.
 
 ### The application should be a basic webhook receiver that has two endpoints.
 1. GET /healthz - should return HTTP 200-OK and “OK” as a string in the body
