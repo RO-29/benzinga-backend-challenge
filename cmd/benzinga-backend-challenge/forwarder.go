@@ -16,13 +16,18 @@ type webhookForwarder struct {
 	endpoint      string
 	batchSize     int
 	batchInterval time.Duration
+
+	retrySleepInterval time.Duration
+	retryLimit         int
 }
 
 func newWebhookForwarderHandler(dic *diContainer) *webhookForwarder {
 	return &webhookForwarder{
-		endpoint:      dic.flags.postEndpoint,
-		batchSize:     dic.flags.batchSize,
-		batchInterval: dic.flags.batchInterval,
+		endpoint:           dic.flags.postEndpoint,
+		batchSize:          dic.flags.batchSize,
+		batchInterval:      dic.flags.batchInterval,
+		retrySleepInterval: 2 * time.Second,
+		retryLimit:         3,
 	}
 }
 
@@ -140,20 +145,21 @@ func (w *webhookForwarder) forwardWithRetries(ctx context.Context, eventsPayload
 	req = req.WithContext(ctx)
 	retries := 0
 	var lastErr error
+	var lastStatusCode int
 	for {
-		// return if retires exceeds 3 times and one original try
-		if retries > 3 {
-			return 0, lastErr
+		// return if retires exceeds w.retryLimit (3 times by default) and one original try
+		if retries > w.retryLimit {
+			return lastStatusCode, lastErr
 		}
 		// sleep before each retry but not first try
 		if retries >= 1 {
 			log.WithFields(
 				log.Fields{
 					"retry":          retries,
-					"sleep_interval": "2s",
+					"sleep_interval": w.retrySleepInterval,
 				},
 			).Info("post err")
-			time.Sleep(2 * time.Second)
+			time.Sleep(w.retrySleepInterval)
 		}
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
@@ -168,6 +174,7 @@ func (w *webhookForwarder) forwardWithRetries(ctx context.Context, eventsPayload
 		}
 		err = errors.Errorf("unexpected status code from post request got:%#v want:%#v", res.StatusCode, "status code in[200,300)")
 		lastErr = err
+		lastStatusCode = res.StatusCode
 		retries++
 	}
 }
