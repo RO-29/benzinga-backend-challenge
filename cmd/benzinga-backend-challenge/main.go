@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"log"
 
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 var version = "dev"
@@ -21,7 +21,10 @@ func main() {
 }
 
 func run() error {
-	log.Printf("running version: %#v, app: %#v", version, appName)
+	log.WithFields(log.Fields{
+		"version": version,
+		"app":     appName,
+	}).Info("running")
 	flg := getFlags()
 	ctx := context.Background()
 	dic := newDIContainer(flg)
