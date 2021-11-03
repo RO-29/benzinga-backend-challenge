@@ -11,7 +11,7 @@ RUN set -ex &&\
  DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates tzdata &&\
  rm -rf /var/lib/apt/lists/*
 WORKDIR /data/benzinga-backend-challenge
-EXPOSE 8080 9000
+EXPOSE 8080
 ENTRYPOINT ["/data/benzinga-backend-challenge/benzinga-backend-challenge"]
 COPY . /app
 COPY --from=builder /app/build/* /data/benzinga-backend-challenge/

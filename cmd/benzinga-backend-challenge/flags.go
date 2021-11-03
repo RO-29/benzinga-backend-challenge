@@ -30,7 +30,7 @@ func getFlags() *flags {
 	fs.StringVar(&flg.logFile, "log-file", flg.logFile, "log file")
 	fs.IntVar(&flg.batchSize, "batch-size", flg.batchSize, "Batch Size")
 	fs.DurationVar(&flg.batchInterval, "batch-interval", flg.batchInterval, "Batch Interval")
-	fs.StringVar(&flg.postEndpoint, "post-endpoint", flg.logFile, "Post Endpoint")
+	fs.StringVar(&flg.postEndpoint, "post-endpoint", flg.postEndpoint, "Post Endpoint")
 	_ = fs.Parse(os.Args[1:]) // Ignore error, because it exits on error
 	checkFlags(flg)
 	return flg
