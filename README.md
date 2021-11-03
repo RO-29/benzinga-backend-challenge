@@ -67,9 +67,39 @@ Benzinga Backend Challenge, a simple webhook receiver and forwarder.
 - `make lint` runs the golang-ci lint (installs it if not present) and runs the linter as defined in `root/.golangci.yml`.
 
 ## Test
-- `make test` runs all the test in main as well as helper packages and generates the coverage report.
+- `make test` runs all the test in main package and generates the coverage report.
 
 ## cmd
 - `main` http service is inside the `cmd/benzinga-backend-challenge`
 
 ## Postman Code for easy accesibilty
+- Log Payload
+```
+curl -X POST \
+  http://localhost:8080/log \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -d '{
+    "user_id": 1,
+    "total": 1.65,
+    "title": "delectus aut autem",
+    "meta": {
+        "logins": [{
+            "time": "2020-08-08T01:52:50Z",
+            "ip": "0.0.0.0"
+        }],
+        "phone_numbers": {
+            "home": "555-1212",
+            "mobile": "123-5555"
+        }
+    },
+    "completed": false
+}'
+````
+- Health Check
+```
+curl -X GET \
+  http://localhost:8080/healthz \
+  -H 'cache-control: no-cache'
+```
+
