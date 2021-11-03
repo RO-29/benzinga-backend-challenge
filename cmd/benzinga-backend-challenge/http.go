@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func runHTTPServer(_ context.Context, dic *diContainer, addr string) error {
+func runHTTPServer(ctx context.Context, dic *diContainer, addr string) error {
 	h, err := dic.httpHandler()
 	if err != nil {
 		return errors.Wrap(err, "get http handler")
@@ -24,12 +24,25 @@ func runHTTPServer(_ context.Context, dic *diContainer, addr string) error {
 		Addr:    addr,
 		Handler: h,
 	}
+	go runForwarderConsumer(ctx, dic)
 	err = srv.ListenAndServe()
 	if err != nil {
 		return errors.Wrap(err, "listen and serve")
 	}
+
 	log.Info("Stopped HTTP server")
 	return nil
+}
+
+func runForwarderConsumer(ctx context.Context, dic *diContainer) {
+	inputBufferMsgs := make(chan logHTTPHandlerRequestBody, dic.flags.batchSize*2)
+	fw := dic.webhookForwarder()
+	errCh := make(chan error)
+	go fw.forward(ctx, inputBufferMsgs, errCh)
+	err := <-errCh
+	if err != nil {
+		log.WithField("err: ", err).Fatal("exit")
+	}
 }
 
 func newHTTPHandler(dic *diContainer) (http.Handler, error) {
