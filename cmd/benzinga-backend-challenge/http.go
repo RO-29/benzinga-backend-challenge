@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 func runHTTPServer(_ context.Context, dic *diContainer, addr string) error {
@@ -17,7 +17,9 @@ func runHTTPServer(_ context.Context, dic *diContainer, addr string) error {
 	if err != nil {
 		return errors.Wrap(err, "get http handler")
 	}
-	log.Printf("Start HTTP server on %s", addr)
+	log.WithFields(log.Fields{
+		"addr": "addr",
+	}).Info("Start HTTP server")
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: h,
