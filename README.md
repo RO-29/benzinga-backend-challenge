@@ -65,8 +65,8 @@ batch-interval duration
 OR
 - Env
 ```
-WEBHOOK_POST_ENDPOINT=<valid string url>
-env=WEBHOOK_BATCH_SIZE=<valid int>
+WEBHOOK_POST_ENDPOINT=<valid url string>
+WEBHOOK_BATCH_SIZE=<valid int>
 WEBHOOK_BATCH_INTERVAL=<valid golang time.Duration>
 ```
 
