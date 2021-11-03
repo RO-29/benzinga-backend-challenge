@@ -34,7 +34,7 @@ Benzinga Backend Challenge, a simple webhook receiver and forwarder.
 - Retain them all in-memory.
 - When batch size is reached OR the batch interval has passed forward the collected records as an array to the post endpoint.
 - Clear the in-memory cache of objects.
-- Logger 
+- Logger (`"github.com/sirupsen/logrus"`)
    - log an initialization message on startup 
    - On each HTTP request 
    - Each time it sends a batch  
@@ -47,10 +47,46 @@ Benzinga Backend Challenge, a simple webhook receiver and forwarder.
    - After 3 failures log this failure and exit. 
 - Testing for the Post endpoint output will be done against a service such as http://requestbin.net.
 
+### Arguments
+- Can be set through os env or overriding through flag args passed while running the build
+- Flags
+```
+batch-interval duration
+        Batch Interval (default 10s)
+  -batch-size int
+        Batch Size (default 10)
+  -http string
+        HTTP  (default ":8080")
+  -log-file string
+        log file
+  -post-endpoint string
+        Post Endpoint
+```
+OR
+- Env
+```
+WEBHOOK_POST_ENDPOINT=<valid string url>
+env=WEBHOOK_BATCH_SIZE=<valid int>
+WEBHOOK_BATCH_INTERVAL=<valid golang time.Duration>
+```
+
 ### Algorithm / Implementation
+- A buffered channel is init at program startup, if `batch size > 0`, `buffered channel = 2*batch_size` or `100` by default.
+- Buffered channel will make sure, /log is not blocking deserializing while our forwarder consumer is processing.
+- At same, time HTTP handlers / receivers are regsitered. (Routing is handled via gorrila/mux).
+- `/log` recieves the json, deserile in thedefined strcut and pushes to a buffered channel.
+- We start a `forwarder consumer` in background and it iterates over buffer channel and accumulates msgs in a simple in-memory array.
+- `forwarder consumer` itself regsiter a background process which starts a forever blocking select channel.
+- select channel has three cases, either a batch_size is full or batch_interval is reached or accumualte the msg in in-memory array.
+- When batch(size/interval) is reached, it forwards the accumualted msgs to webhook endpoint as per the requirement
+- if there is error in "post call" after three retries, it sends the error to err channel and then the programs exits as per the requirement
+
+
 
 ### Scope of Improvements
-
+- Start `forwarder` consumer in waitgroup so it multiple consumers could be started in background in case of high throughput.
+- Add more unit tests 🙈
+- 
 ## github-action
 
 - On every push to github, it runs linter / test and docker build
