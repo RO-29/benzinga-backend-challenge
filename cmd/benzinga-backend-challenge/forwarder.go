@@ -57,6 +57,9 @@ func (w *webhookForwarder) forward(ctx context.Context, msgStream <-chan *logHTT
 			"batch_size":       len(eventsPayload),
 		},
 	).Info("request success")
+	// clear cache
+	// eventsPayload = nil
+
 }
 
 func (w *webhookForwarder) forwardWithRetries(ctx context.Context, eventsPayload []*logHTTPHandlerRequestBody) (int, error) {
