@@ -18,8 +18,8 @@ func runHTTPServer(_ context.Context, dic *diContainer, addr string) error {
 		return errors.Wrap(err, "get http handler")
 	}
 	log.WithFields(log.Fields{
-		"addr": "addr",
-	}).Info("Start HTTP server")
+		"addr": addr,
+	}).Info("Start HTTP server on")
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: h,
@@ -28,7 +28,7 @@ func runHTTPServer(_ context.Context, dic *diContainer, addr string) error {
 	if err != nil {
 		return errors.Wrap(err, "listen and serve")
 	}
-	log.Println("Stopped HTTP server")
+	log.Info("Stopped HTTP server")
 	return nil
 }
 
@@ -122,7 +122,9 @@ func onHTTPError(_ context.Context, w http.ResponseWriter, _ *http.Request, err 
 	enc := json.NewEncoder(buf)
 	_ = enc.Encode(resp)
 	_, _ = w.Write(buf.Bytes())
-	log.Println("err: ", err)
+	log.WithFields(log.Fields{
+		"err": err,
+	}).Error()
 }
 
 type httpErrorResponse struct {

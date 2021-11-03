@@ -2,11 +2,12 @@ package main
 
 import (
 	"flag"
-	"log"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type flags struct {
@@ -63,12 +64,12 @@ const (
 func setPostEndpointEnv(flg *flags) {
 	u, ok := os.LookupEnv(postEndPointEnvVar)
 	if !ok {
-		log.Printf("no valid post endpoint found in env: %s\n", postEndPointEnvVar)
+		log.WithField("env", postEndPointEnvVar).Warn("no valid post endpoint found in")
 		return
 	}
 	_, err := url.Parse(u)
 	if err != nil {
-		log.Printf("invalid post endpoint: '%s' found in env: %s\n", u, postEndPointEnvVar)
+		log.WithField("env", postEndPointEnvVar).Warn("no valid post endpoint found in")
 		return
 	}
 	flg.postEndpoint = u
@@ -77,12 +78,12 @@ func setPostEndpointEnv(flg *flags) {
 func setBatchSizeEnv(flg *flags) {
 	bs, ok := os.LookupEnv(batchSizeEnvVar)
 	if !ok {
-		log.Printf("no valid batch size found in env: %s\n", batchSizeEnvVar)
+		log.WithField("env", batchSizeEnvVar).Warn("no valid batch size found in")
 		return
 	}
 	bsI, err := strconv.Atoi(bs)
 	if err != nil {
-		log.Printf("no valid batch size found in env: %s\n", batchSizeEnvVar)
+		log.WithField("env", batchSizeEnvVar).Warn("no valid batch size found in")
 		return
 
 	}
@@ -92,12 +93,12 @@ func setBatchSizeEnv(flg *flags) {
 func setBatchIntervalEnv(flg *flags) {
 	bi, ok := os.LookupEnv(batchIntervalEnvVar)
 	if !ok {
-		log.Printf("no valid batch interval found in env: %s\n", batchIntervalEnvVar)
+		log.WithField("env", batchIntervalEnvVar).Warn("no valid batch interval found in")
 		return
 	}
 	biT, err := time.ParseDuration(bi)
 	if err != nil {
-		log.Printf("no valid batch interval found in env: %s\n", batchIntervalEnvVar)
+		log.WithField("env", batchIntervalEnvVar).Warn("no valid batch interval found in")
 		return
 	}
 	flg.batchInterval = biT
