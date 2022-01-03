@@ -1,5 +1,5 @@
 # queue-inmemory-webhook-forwarder
-Simple webhook receiver (queued in-memory) and forward to an HTTP reciever.
+Simple webhook receiver (queued in-memory) and forward to an HTTP receiver.
 
 ### The application should be a basic webhook receiver that has two endpoints.
 1. GET /healthz - should return HTTP 200-OK and “OK” as a string in the body
