@@ -1,4 +1,4 @@
-module benzinga-backend-challenge
+module queue-inmemory-webhook-forwarder
 
 go 1.17
 

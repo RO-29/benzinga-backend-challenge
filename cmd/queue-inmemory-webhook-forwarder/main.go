@@ -10,7 +10,7 @@ import (
 var version = "dev"
 
 const (
-	appName = "benzinga-backend-challenge"
+	appName = "queue-inmemory-webhook-forwarder"
 )
 
 func main() {

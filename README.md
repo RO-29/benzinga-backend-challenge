@@ -1,5 +1,5 @@
-# benzinga-backend-challenge
-Benzinga Backend Challenge, a simple webhook receiver and forwarder.
+# queue-inmemory-webhook-forwarder
+Simple webhook receiver (queued in-memory) and forward to an HTTP reciever.
 
 ### The application should be a basic webhook receiver that has two endpoints.
 1. GET /healthz - should return HTTP 200-OK and “OK” as a string in the body
@@ -100,7 +100,7 @@ WEBHOOK_BATCH_INTERVAL=<valid golang time.Duration>
 - `make test` runs all the test in main package and generates the coverage report.
 
 ## cmd
-- `main` http service is inside the `cmd/benzinga-backend-challenge`
+- `main` http service is inside the `cmd/queue-inmemory-webhook-forwarder`
 
 ## Postman Code for easy accesibilty
 - Log Payload
